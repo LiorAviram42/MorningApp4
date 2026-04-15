@@ -15,7 +15,7 @@ interface Props {
 }
 
 export default function HomeScreen({ onSelectKid }: Props) {
-  const { user, profile, isAuthLoading, authError } = useUser();
+  const { user, profile, login, logout } = useUser();
   const [animatingKid, setAnimatingKid] = useState<KidId | null>(null);
   const [showFamilySettings, setShowFamilySettings] = useState(false);
   const [showCodeLogin, setShowCodeLogin] = useState(false);
@@ -31,12 +31,13 @@ export default function HomeScreen({ onSelectKid }: Props) {
   });
 
   useEffect(() => {
-    if (user && !isAuthLoading) {
+    if (user && sessionStorage.getItem('show_login_success') === 'true') {
       setShowSuccess(true);
+      sessionStorage.removeItem('show_login_success');
       const timer = setTimeout(() => setShowSuccess(false), 3000);
       return () => clearTimeout(timer);
     }
-  }, [user, isAuthLoading]);
+  }, [user]);
 
   useEffect(() => {
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
@@ -138,51 +139,32 @@ export default function HomeScreen({ onSelectKid }: Props) {
   const handleLogin = async () => {
     setGoogleLoginError('');
     try {
-      sessionStorage.setItem('auth_pending', 'true');
-      window.dispatchEvent(new CustomEvent('firebase-auth-trigger'));
-      
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: 'select_account' });
-      
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-      if (isMobile) {
-        // Use redirect on mobile devices for better stability
-        await signInWithRedirect(auth, provider);
-      } else {
-        // Use popup on desktop
-        await signInWithPopup(auth, provider);
-      }
+      sessionStorage.setItem('show_login_success', 'true');
+      await login();
     } catch (error: any) {
       console.error("Login error:", error);
       if (error.code === 'auth/unauthorized-domain') {
         setGoogleLoginError(`שגיאה: הדומיין ${window.location.hostname} לא מאושר ב-Firebase. אנא הוסף אותו ב-Authorized domains ב-Firebase Console.`);
-      } else if (error.code !== 'auth/popup-closed-by-user') {
+      } else {
         setGoogleLoginError(`שגיאת התחברות: ${error.message}`);
       }
     }
   };
 
   const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      localStorage.removeItem('auth_loading_requested');
-      window.location.reload();
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
+    await logout();
   };
 
   return (
-    <div className="flex flex-col items-center justify-between h-full w-full relative overflow-hidden box-border pt-12 pb-24">
+    <div className="flex flex-col items-center h-full w-full relative overflow-hidden box-border pb-24">
       {/* Subtle background pattern */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#333 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
       
-      <div className="flex flex-col items-center z-10">
+      <div className="flex-1 flex flex-col justify-center z-10 w-full">
         <h1 className="text-5xl font-bold text-[#333] text-center drop-shadow-sm">בוקר טוב!</h1>
       </div>
       
-      <div className="flex gap-6 justify-center w-full z-10 px-4">
+      <div className="flex gap-6 justify-center w-full z-10 px-4 shrink-0">
         {(Object.keys(KIDS) as KidId[]).map((kidId) => {
           const kid = KIDS[kidId];
           const isAnimating = animatingKid === kidId;
@@ -232,24 +214,17 @@ export default function HomeScreen({ onSelectKid }: Props) {
           );
         })}
       </div>
-      <h2 className="text-[#333] mt-4 text-2xl font-black tracking-tight z-10 mb-8">
-        מוכנים? קדימה לדרך!
-      </h2>
+
+      <div className="flex-1 flex flex-col justify-center z-10 w-full">
+        <h2 className="text-[#333] text-2xl font-black tracking-tight text-center">
+          מוכנים? קדימה לדרך!
+        </h2>
+      </div>
 
       {/* Parent/Child Login Section */}
       <div className="absolute bottom-6 left-0 right-0 flex flex-col items-center gap-4 z-10">
-        {isAuthLoading ? (
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-6 h-6 border-2 border-[#333] border-t-transparent rounded-full animate-spin" />
-            <span className="text-xs font-bold text-[#333]">מתחבר למערכת...</span>
-          </div>
-        ) : !user && !profile ? (
+        {!user && !profile ? (
           <div className="flex flex-col items-center gap-3">
-            {authError && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-1 rounded-lg text-[10px] max-w-[200px] text-center mb-2">
-                שגיאה: {authError}
-              </div>
-            )}
             {googleLoginError && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded-lg text-xs max-w-[250px] text-center mb-2 shadow-sm">
                 {googleLoginError}

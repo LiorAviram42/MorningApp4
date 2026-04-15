@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import splashImg from '/splash_screen.png';
+const splashImg = './splash_screen.png';
 
 interface Props {
   onFinish: () => void;

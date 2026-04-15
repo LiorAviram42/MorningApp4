@@ -18,22 +18,24 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 function AppContent() {
   const [screen, setScreen] = useState<'splash' | 'home' | 'game'>('splash');
   const [selectedKid, setSelectedKid] = useState<KidId | null>(null);
-  const { user, profile, authReady } = useUser();
+  const { user, profile, isAuthLoading, globalError } = useUser();
 
   useEffect(() => {
-    console.log("App state changed:", { screen, selectedKid, authReady, user: user?.uid, profile });
-  }, [screen, selectedKid, authReady, user, profile]);
+    console.log("App state changed:", { screen, selectedKid, isAuthLoading, user: user?.uid, profile });
+  }, [screen, selectedKid, isAuthLoading, user, profile]);
 
-  // Safety timer: If we're still on splash after 6 seconds, force home
+  // Safety timer: If we're still on splash after 6 seconds AND auth is loaded, force home
   useEffect(() => {
     if (screen === 'splash') {
       const timer = setTimeout(() => {
-        console.log("Safety timer triggered: forcing home screen");
-        setScreen('home');
+        if (!isAuthLoading) {
+          console.log("Safety timer triggered: forcing home screen");
+          setScreen('home');
+        }
       }, 6000);
       return () => clearTimeout(timer);
     }
-  }, [screen]);
+  }, [screen, isAuthLoading]);
 
   useEffect(() => {
     const checkDailyReset = async () => {
@@ -64,15 +66,28 @@ function AppContent() {
       }
     };
     
-    if (authReady) {
+    if (!isAuthLoading) {
       checkDailyReset();
     }
-  }, [user, authReady]);
+  }, [user, isAuthLoading, profile]);
 
   const handleSplashFinish = useCallback(() => {
-    console.log("Splash finished, moving to home");
-    setScreen('home');
-  }, []);
+    console.log("Splash finished, checking auth state");
+    if (!isAuthLoading) {
+      setScreen('home');
+    }
+  }, [isAuthLoading]);
+
+  // Force home screen if splash finished but auth was still loading, and now auth is done
+  useEffect(() => {
+    if (screen === 'splash' && !isAuthLoading) {
+      // We give it a tiny delay to let the splash animation finish if it's still running
+      const timer = setTimeout(() => {
+        setScreen('home');
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthLoading, screen]);
 
   const handleKidSelect = useCallback((kidId: KidId) => {
     console.log("handleKidSelect called with:", kidId);
@@ -104,15 +119,20 @@ function AppContent() {
       className="w-full h-full min-h-[100dvh] max-w-md mx-auto relative overflow-hidden flex flex-col font-sans select-none transition-all duration-500"
       style={backgroundStyle}
     >
+      {globalError && (
+        <div className="absolute top-0 left-0 right-0 bg-red-600 text-white p-6 z-[100] text-xl font-black text-center shadow-lg border-b-4 border-red-800 break-words">
+          {globalError}
+        </div>
+      )}
       {screen === 'splash' && <SplashScreen onFinish={handleSplashFinish} />}
-      {screen === 'home' && !authReady && (
+      {screen === 'home' && isAuthLoading && (
         <div className="flex flex-col items-center justify-center h-full gap-4">
           <div className="w-10 h-10 border-4 border-[#333] border-t-transparent rounded-full animate-spin" />
           <span className="text-sm font-bold text-[#333]">טוען...</span>
         </div>
       )}
-      {screen === 'home' && authReady && <HomeScreen onSelectKid={handleKidSelect} hasMagicBg={false} />}
-      {screen === 'game' && selectedKid && authReady && (
+      {screen === 'home' && !isAuthLoading && <HomeScreen onSelectKid={handleKidSelect} hasMagicBg={false} />}
+      {screen === 'game' && selectedKid && !isAuthLoading && (
         <GameScreen kidId={selectedKid} onBack={handleBack} />
       )}
       <InstallPrompt />

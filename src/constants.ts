@@ -1,33 +1,33 @@
 import { KidConfig, KidId, Task } from './types';
 
-import profileYuvali from '/profile_yuvali.png';
-import profileMaayani from '/profile_maayani.png';
-import profilePalgi from '/profile_palgi.png';
+const profileYuvali = './profile_yuvali.png';
+const profileMaayani = './profile_maayani.png';
+const profilePalgi = './profile_palgi.png';
 
-import teethOff from '/icon_teeth_off.png';
-import teethOn from '/icon_teeth_on.png';
-import hairOff from '/icon_hair_off.png';
-import hairOn from '/icon_hair_on.png';
-import toiletOff from '/icon_toilet_off.png';
-import toiletOn from '/icon_toilet_on.png';
-import clothesOff from '/icon_clothes_off.png';
-import clothesOn from '/icon_clothes_on.png';
-import shoesOff from '/icon_shoes_off.png';
-import shoesOn from '/icon_shoes_on.png';
-import cerealOff from '/icon_cereal_off.png';
-import cerealOn from '/icon_cereal_on.png';
-import bagOff from '/icon_bag_off.png';
-import bagOn from '/icon_bag_on.png';
+const teethOff = './icon_teeth_off.png';
+const teethOn = './icon_teeth_on.png';
+const hairOff = './icon_hair_off.png';
+const hairOn = './icon_hair_on.png';
+const toiletOff = './icon_toilet_off.png';
+const toiletOn = './icon_toilet_on.png';
+const clothesOff = './icon_clothes_off.png';
+const clothesOn = './icon_clothes_on.png';
+const shoesOff = './icon_shoes_off.png';
+const shoesOn = './icon_shoes_on.png';
+const cerealOff = './icon_cereal_off.png';
+const cerealOn = './icon_cereal_on.png';
+const bagOff = './icon_bag_off.png';
+const bagOn = './icon_bag_on.png';
 
-import faceYuvaliOff from '/icon_face_yuvali_off.png';
-import faceYuvaliOn from '/icon_face_yuvali_on.png';
-import faceMaayaniOff from '/icon_face_maayani_off.png';
-import faceMaayaniOn from '/icon_face_maayani_on.png';
-import facePelegiOff from '/icon_face_pelegi_off.png';
-import facePelegiOn from '/icon_face_pelegi_on.png';
+const faceYuvaliOff = './icon_face_yuvali_off.png';
+const faceYuvaliOn = './icon_face_yuvali_on.png';
+const faceMaayaniOff = './icon_face_maayani_off.png';
+const faceMaayaniOn = './icon_face_maayani_on.png';
+const facePelegiOff = './icon_face_pelegi_off.png';
+const facePelegiOn = './icon_face_pelegi_on.png';
 
-import diaperOff from '/icon_diaper_off.png';
-import diaperOn from '/icon_diaper_on.png';
+const diaperOff = './icon_diaper_off.png';
+const diaperOn = './icon_diaper_on.png';
 
 export const KIDS: Record<KidId, KidConfig> = {
   yuvali: {
