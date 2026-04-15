@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    function getMyProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function isFamilyMember(familyId) {
+      return isAuthenticated() && (request.auth.uid == familyId || (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId == familyId));
+    }
+    function isParent(familyId) {
+      return isAuthenticated() && (request.auth.uid == familyId || (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId == familyId && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'parent'));
+    }
+    
+    // Domain Validators
+    function isValidKidProgress(data) {
+      return data.keys().hasOnly(['stars', 'lastStarDate', 'lastActiveDate', 'completedTasks']) &&
+             data.stars is number && data.stars >= 0 &&
+             data.lastStarDate is string &&
+             data.lastActiveDate is string &&
+             data.completedTasks is list;
+    }
+    function isValidUserProfile(data) {
+      return data.keys().hasOnly(['familyId', 'role']) &&
+             data.familyId is string &&
+             data.role in ['parent', 'child'];
+    }
+    function isValidJoinCode(data) {
+      return data.keys().hasOnly(['familyId', 'role']) &&
+             data.familyId is string &&
+             data.role in ['parent', 'child'];
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUserProfile(request.resource.data);
+      allow update: if isOwner(userId) && isValidUserProfile(request.resource.data);
+    }
+
+    match /joinCodes/{code} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.familyId == request.auth.uid && isValidJoinCode(request.resource.data);
+      allow delete: if isAuthenticated() && resource.data.familyId == request.auth.uid;
+    }
+
+    match /users/{userId}/kids/{kidId} {
+      allow read: if isFamilyMember(userId);
+      allow create: if isFamilyMember(userId) && isValidKidProgress(request.resource.data);
+      allow update: if isFamilyMember(userId) && isValidKidProgress(request.resource.data) &&
+                    (isParent(userId) || request.resource.data.stars >= resource.data.stars);
+      allow delete: if isParent(userId);
+    }
+  }
+}

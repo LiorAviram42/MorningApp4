@@ -1,0 +1,83 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores the user's family association and role.",
+      "type": "object",
+      "properties": {
+        "familyId": {
+          "type": "string",
+          "description": "The ID of the family this user belongs to."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["parent", "child"],
+          "description": "The role of the user in the family."
+        }
+      },
+      "required": ["familyId", "role"]
+    },
+    "JoinCode": {
+      "title": "Join Code",
+      "description": "A code used to join a family.",
+      "type": "object",
+      "properties": {
+        "familyId": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["parent", "child"]
+        }
+      },
+      "required": ["familyId", "role"]
+    },
+    "KidProgress": {
+      "title": "Kid Progress",
+      "description": "Stores the progress of a kid's morning routine.",
+      "type": "object",
+      "properties": {
+        "stars": {
+          "type": "number",
+          "description": "The total number of stars the kid has earned."
+        },
+        "lastStarDate": {
+          "type": "string",
+          "description": "The date string of the last time a star was awarded."
+        },
+        "lastActiveDate": {
+          "type": "string",
+          "description": "The date string of the last time the kid was active (used for daily resets)."
+        },
+        "completedTasks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The list of task IDs currently completed."
+        }
+      },
+      "required": ["stars", "lastStarDate", "lastActiveDate", "completedTasks"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "The user's profile containing their family association."
+    },
+    "/joinCodes/{code}": {
+      "schema": {
+        "$ref": "#/entities/JoinCode"
+      },
+      "description": "Codes used to join a family."
+    },
+    "/users/{userId}/kids/{kidId}": {
+      "schema": {
+        "$ref": "#/entities/KidProgress"
+      },
+      "description": "The progress for each kid, scoped to the parent's user ID."
+    }
+  }
+}

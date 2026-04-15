@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Morning">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#fdf6e3">
+    <meta name="color-scheme" content="light">
+    <link rel="manifest" href="/manifest_v6.json">
+    <link rel="apple-touch-icon" href="/morning_icon_v6.png">
+    <link rel="icon" type="image/png" href="/morning_icon_v6.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/morning_icon_v6.png">
+    <title>Morning</title>
+    <style>
+      /* Prevent pull-to-refresh and other unwanted mobile behaviors */
+      html, body {
+        overscroll-behavior-y: none;
+        background-color: #fdf6e3;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        height: 100%;
+        width: 100%;
+      }
+      /* Remove the status bar gap on some browsers */
+      #root {
+        min-height: 100dvh;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body class="bg-[#fdf6e3] m-0 p-0 overflow-hidden flex justify-center items-center min-h-[100dvh] h-full w-full">
+    <div id="root" class="w-full h-full flex justify-center"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
